@@ -16,11 +16,11 @@ defmodule EspecRequestDescriber do
         let :endpoint_segments do
           description =
             @context
-            |> Enum.find(&RequestDescriber.context?/1)
+            |> Enum.find(&EspecRequestDescriber.context?/1)
             |> Map.fetch!(:description)
 
           Regex.run(
-            ~r/(#{RequestDescriber.supported_methods |> Enum.join("|")}) (\S+)/i,
+            ~r/(#{EspecRequestDescriber.supported_methods |> Enum.join("|")}) (\S+)/i,
             description,
             capture: :all_but_first
           )
@@ -40,6 +40,10 @@ defmodule EspecRequestDescriber do
     end
   end
 
+  defmacro rdescribe(desc, opts \\ [], do: block) do
+    quote do: describe_request(unquote(desc), unquote(opts), do: unquote(block))
+  end
+
   def context?(value) do
     case value do
       %ESpec.Context{} -> true
@@ -49,7 +53,7 @@ defmodule EspecRequestDescriber do
 
   defmacro __using__(_opts) do
     quote do
-      import RequestDescriber, only: [describe_request: 2]
+      import EspecRequestDescriber, only: [describe_request: 2]
     end
   end
 end
