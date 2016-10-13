@@ -1,8 +1,4 @@
 defmodule EspecRequestDescriber do
-  def reserverd_header_names do
-    ~w(Content-Type Host HTTPS)
-  end
-
   def supported_methods do
     ~w(GET POST PUT PATCH DELETE)
   end
@@ -16,7 +12,7 @@ defmodule EspecRequestDescriber do
         let :endpoint_segments do
           description =
             @context
-            |> Enum.find(&EspecRequestDescriber.context?/1)
+            |> Enum.find(&(&1.__struct__ == ESpec.Context))
             |> Map.fetch!(:description)
 
           Regex.run(
@@ -27,7 +23,11 @@ defmodule EspecRequestDescriber do
         end
 
         let :http_method, do: endpoint_segments |> Enum.at(0) |> String.downcase |> String.to_atom
-        let :request_path, do: endpoint_segments |> Enum.at(1)
+        let :request_path do
+          path = endpoint_segments |> Enum.at(1)
+          fun = fn _, x -> "#{apply(__MODULE__, String.to_atom(x), [])}" end
+          Regex.replace(~r/:(\w+[!?]?)/, path, fun)
+        end
 
         let :send_request do
           Phoenix.ConnTest.dispatch(conn, @endpoint, http_method, request_path, params)
@@ -44,16 +44,9 @@ defmodule EspecRequestDescriber do
     quote do: describe_request(unquote(desc), unquote(opts), do: unquote(block))
   end
 
-  def context?(value) do
-    case value do
-      %ESpec.Context{} -> true
-      _                -> false
-    end
-  end
-
   defmacro __using__(_opts) do
     quote do
-      import EspecRequestDescriber, only: [describe_request: 2]
+      import EspecRequestDescriber, except: [supported_methods: 0]
     end
   end
 end
