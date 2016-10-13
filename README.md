@@ -9,7 +9,7 @@ Add `espec_request_describer` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:espec_request_describer, "~> 0.0.2", git: "git@github.com:techno-tanoC/espec_request_describer.git"}]
+  [{:espec_request_describer, "~> 0.1.0", git: "git@github.com:techno-tanoC/espec_request_describer.git"}]
 end
 ```
 
